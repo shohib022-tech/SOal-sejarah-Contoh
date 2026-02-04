@@ -1,195 +1,317 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <title>Soal Pilihan Ganda</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Google Visualization -->
-  <script src="https://www.gstatic.com/charts/loader.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Soal Pilihan Ganda</title>
 
-  <style>
-    /* Menambahkan custom scrollbar untuk pengalaman mobile yang lebih baik */
-    ::-webkit-scrollbar {
-      width: 8px;
-    }
-    
-    ::-webkit-scrollbar-track {
-      background: #f1f1f1;
-      border-radius: 4px;
-    }
-    
-    ::-webkit-scrollbar-thumb {
-      background: #c1c1c1;
-      border-radius: 4px;
-    }
-    
-    ::-webkit-scrollbar-thumb:hover {
-      background: #a1a1a1;
-    }
-    
-    /* Efek tap yang lebih jelas untuk mobile */
-    .option-label:active {
-      transform: scale(0.98);
-      transition: transform 0.1s;
-    }
-    
-    /* Memastikan radio button mudah diklik di mobile */
-    input[type="radio"] {
-      min-width: 20px;
-      min-height: 20px;
-    }
-  </style>
+<!-- Tailwind -->
+<script src="https://cdn.tailwindcss.com"></script>
 
-  <script>
-    google.charts.load('current', { packages: ['table'] });
-    google.charts.setOnLoadCallback(loadSoal);
+<!-- Google Visualization -->
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 
-    function loadSoal() {
-      const sheetID = '1OIsVI6IxJBJubqfWNRJsk8Z5ShORGXs1uTbgqVO4ca8';
-      const gid = '0';
-      const query = new google.visualization.Query(
-        `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?gid=${gid}`
-      );
+<style>
+/* Anti copy */
+* {
+  user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+}
 
-      query.send(response => {
-        if (response.isError()) {
-          document.getElementById("soal").innerHTML = `
-            <div class="text-center p-8">
-              <div class="inline-flex items-center justify-center w-16 h-16 bg-red-100 rounded-full mb-4">
-                <span class="text-2xl">⚠️</span>
-              </div>
-              <h3 class="text-xl font-semibold text-gray-800 mb-2">Gagal Memuat Soal</h3>
-              <p class="text-gray-600">Silakan periksa koneksi internet Anda dan coba lagi.</p>
-            </div>`;
-          return;
-        }
+/* Blur saat screenshot / tab pindah */
+.blur {
+  filter: blur(10px);
+  transition: filter 0.3s ease;
+}
 
-        const data = response.getDataTable();
-        let html = "";
+/* Animasi untuk tombol */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
 
-        for (let i = 0; i < data.getNumberOfRows(); i++) {
-          html += `
-          <div class="bg-white rounded-2xl shadow-md p-4 md:p-6 mb-4 md:mb-6 transition-all duration-200 hover:shadow-lg border border-gray-100">
-            <div class="flex items-start mb-3 md:mb-4">
-              <span class="flex-shrink-0 bg-blue-100 text-blue-800 font-bold rounded-lg px-3 py-1 mr-3 text-sm md:text-base">
-                ${data.getValue(i, 0)}
-              </span>
-              <h2 class="font-bold text-base md:text-lg text-gray-800 leading-relaxed">
-                ${data.getValue(i, 1)}
-              </h2>
-            </div>
-
-            <div class="space-y-2 md:space-y-3">
-              ${buatOpsi(i, 'A', data.getValue(i, 2))}
-              ${buatOpsi(i, 'B', data.getValue(i, 3))}
-              ${buatOpsi(i, 'C', data.getValue(i, 4))}
-              ${buatOpsi(i, 'D', data.getValue(i, 5))}
-              ${buatOpsi(i, 'E', data.getValue(i, 6))}
-            </div>
-          </div>`;
-        }
-
-        document.getElementById("soal").innerHTML = html;
-      });
-    }
-
-    function buatOpsi(no, huruf, teks) {
-      return `
-      <label class="option-label flex items-center gap-3 p-3 md:p-4 border border-gray-200 rounded-xl cursor-pointer transition-all duration-200 hover:bg-blue-50 hover:border-blue-200 active:bg-blue-100">
-        <input type="radio" name="soal_${no}" value="${huruf}" class="accent-blue-600">
-        <div class="flex items-start">
-          <span class="font-bold text-blue-700 mr-3 min-w-[24px]">${huruf}.</span>
-          <span class="text-gray-700 text-sm md:text-base leading-relaxed">${teks}</span>
-        </div>
-      </label>`;
-    }
-    
-    // Menambahkan konfirmasi sebelum meninggalkan halaman jika ada jawaban yang sudah dipilih
-    window.addEventListener('beforeunload', function (e) {
-      const radios = document.querySelectorAll('input[type="radio"]:checked');
-      if (radios.length > 0) {
-        e.preventDefault();
-        e.returnValue = '';
-      }
-    });
-  </script>
+.fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+</style>
 </head>
 
-<body class="bg-gradient-to-b from-slate-50 to-blue-50 min-h-screen p-3 md:p-6">
-  <div class="max-w-3xl mx-auto">
-    <!-- Header dengan sticky behavior untuk mobile -->
-    <div class="sticky top-0 z-10 bg-white/90 backdrop-blur-sm border-b border-gray-200 -mx-3 md:-mx-6 px-3 md:px-6 py-4 mb-4 md:mb-6">
-      <div class="flex flex-col items-center">
-        <div class="flex items-center justify-center w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl shadow mb-3">
-          <span class="text-2xl text-white">📘</span>
-        </div>
-        <h1 class="text-xl md:text-2xl font-bold text-gray-800 text-center">
-          Soal Pilihan Ganda
-        </h1>
-        <p class="text-gray-500 text-sm mt-1 text-center">
-          Pilih jawaban yang paling tepat untuk setiap soal
-        </p>
-      </div>
-      
-      <!-- Progress indicator (placeholder) -->
-      <div class="mt-4">
-        <div class="flex justify-between text-xs text-gray-500 mb-1">
-          <span>0/Soal</span>
-          <span>0%</span>
-        </div>
-        <div class="w-full bg-gray-200 rounded-full h-2">
-          <div class="bg-blue-600 h-2 rounded-full" style="width: 0%"></div>
-        </div>
-      </div>
-    </div>
+<body class="bg-gradient-to-b from-slate-50 to-slate-100 min-h-screen">
+<div id="app" class="max-w-3xl mx-auto p-3 md:p-4 min-h-screen flex flex-col">
 
-    <!-- Container untuk soal -->
-    <div id="soal" class="pb-6">
-      <!-- Loading indicator -->
-      <div class="text-center py-12" id="loading">
-        <div class="inline-flex flex-col items-center">
-          <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mb-4"></div>
-          <p class="text-gray-600">Memuat soal...</p>
-        </div>
+  <!-- Header -->
+  <div class="mb-4 md:mb-6">
+    <h1 class="text-xl md:text-2xl font-bold text-slate-800 text-center">Ujian Online</h1>
+    <div class="flex justify-between items-center mt-2">
+      <div class="text-sm text-slate-600">
+        Soal: <span id="currentSoal" class="font-bold">1</span>/<span id="totalSoal" class="font-bold">0</span>
+      </div>
+      <div class="text-sm text-slate-600">
+        Telah dijawab: <span id="soalTerjawab" class="font-bold">0</span>
       </div>
     </div>
     
-    <!-- Footer dengan tombol aksi -->
-    <div class="sticky bottom-0 bg-white/90 backdrop-blur-sm border-t border-gray-200 -mx-3 md:-mx-6 px-3 md:px-6 py-4 mt-6">
-      <div class="flex justify-between">
-        <button class="px-4 py-2 md:px-5 md:py-3 text-sm md:text-base border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors duration-200 font-medium">
-          ⬅️ Sebelumnya
-        </button>
-        <div class="flex items-center text-gray-600 text-sm md:text-base">
-          <span class="hidden md:inline mr-2">Total:</span>
-          <span id="total-soal">0</span> Soal
-        </div>
-        <button class="px-4 py-2 md:px-5 md:py-3 text-sm md:text-base bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-lg hover:from-blue-600 hover:to-indigo-700 transition-all duration-200 font-medium shadow-sm">
-          Selanjutnya ➡️
-        </button>
-      </div>
-      
-      <!-- Tombol kirim jawaban -->
-      <div class="text-center mt-4">
-        <button class="w-full py-3 md:py-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all duration-200 font-bold text-base md:text-lg shadow-md">
-          📤 Kirim Jawaban
-        </button>
+    <!-- Progress bar -->
+    <div class="mt-2">
+      <div class="h-2 bg-slate-200 rounded-full overflow-hidden">
+        <div id="progressBar" class="h-full bg-blue-500 rounded-full transition-all duration-300" style="width: 0%"></div>
       </div>
     </div>
   </div>
 
-  <script>
-    // Menyembunyikan loading indicator setelah konten dimuat
-    document.addEventListener('DOMContentLoaded', function() {
-      setTimeout(function() {
-        const loadingEl = document.getElementById('loading');
-        if (loadingEl) {
-          loadingEl.style.display = 'none';
+  <!-- Navigasi Nomor Soal (mobile optimized) -->
+  <div class="mb-4 md:mb-6">
+    <div class="flex justify-between items-center mb-2">
+      <h3 class="font-medium text-slate-700">Navigasi Soal</h3>
+      <span class="text-xs text-slate-500">Ketuk untuk pindah soal</span>
+    </div>
+    <div id="navSoal" class="grid grid-cols-5 md:grid-cols-8 gap-2 max-h-40 overflow-y-auto p-2 bg-white/50 rounded-lg"></div>
+  </div>
+
+  <!-- Card Soal -->
+  <div id="soalBox" class="bg-white rounded-2xl shadow-lg p-4 md:p-6 mb-4 md:mb-6 flex-grow fade-in">
+    <h2 id="judulSoal" class="font-bold text-lg md:text-xl text-slate-800 mb-4 md:mb-6"></h2>
+
+    <form id="formJawaban" class="space-y-3 md:space-y-4">
+      <div id="opsi"></div>
+    </form>
+  </div>
+
+  <!-- Navigasi Soal (Previous/Next) -->
+  <div class="flex justify-between gap-3 mb-6">
+    <button id="prevBtn" class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 font-medium py-3 px-4 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+      </svg>
+      <span>Sebelumnya</span>
+    </button>
+    
+    <button id="nextBtn" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+      <span>Selanjutnya</span>
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+      </svg>
+    </button>
+  </div>
+
+  <!-- Footer -->
+  <div class="text-center text-xs text-slate-500 mt-auto pt-4 border-t border-slate-200">
+    <p>Ujian dilindungi dari penyalahgunaan. Screenshot akan mengaburkan layar.</p>
+  </div>
+</div>
+
+<script>
+/* =====================
+   KONFIGURASI SHEET
+===================== */
+const sheetID = "1OIsVI6IxJBJubqfWNRJsk8Z5ShORGXs1uTbgqVO4ca8";
+const sheetName = "Sheet1";
+
+/* =====================
+   VARIABEL
+===================== */
+let dataSoal = [];
+let indexSoal = 0;
+let jawaban = {};
+
+/* =====================
+   LOAD DATA SHEET
+===================== */
+google.charts.load('current', {'packages':['table']});
+google.charts.setOnLoadCallback(loadData);
+
+function loadData() {
+  const query = new google.visualization.Query(
+    `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?sheet=${sheetName}`
+  );
+  query.send(response => {
+    const data = response.getDataTable();
+    for (let i = 0; i < data.getNumberOfRows(); i++) {
+      dataSoal.push({
+        nomor: data.getValue(i, 0),
+        soal: data.getValue(i, 1),
+        opsi: [
+          data.getValue(i, 2),
+          data.getValue(i, 3),
+          data.getValue(i, 4),
+          data.getValue(i, 5),
+          data.getValue(i, 6)
+        ]
+      });
+    }
+    renderNav();
+    renderSoal();
+    updateProgress();
+    
+    // Update total soal di header
+    document.getElementById('totalSoal').textContent = dataSoal.length;
+  });
+}
+
+/* =====================
+   NAVIGASI NOMOR
+===================== */
+function renderNav() {
+  const nav = document.getElementById("navSoal");
+  nav.innerHTML = "";
+  dataSoal.forEach((_, i) => {
+    const btn = document.createElement("button");
+    btn.innerText = i + 1;
+    btn.className = `w-full h-10 rounded-lg font-bold transition-all duration-200 transform hover:scale-105 active:scale-95 
+      ${jawaban[i] ? "bg-blue-500 text-white shadow-md" : "bg-white text-slate-700 border border-slate-300"} 
+      ${i === indexSoal ? "ring-2 ring-blue-300 ring-offset-1" : ""}`;
+    btn.onclick = () => {
+      indexSoal = i;
+      renderSoal();
+    };
+    nav.appendChild(btn);
+  });
+}
+
+/* =====================
+   TAMPILKAN SOAL
+===================== */
+function renderSoal() {
+  const soal = dataSoal[indexSoal];
+  if (!soal) return;
+  
+  document.getElementById("currentSoal").textContent = indexSoal + 1;
+  document.getElementById("judulSoal").innerHTML = 
+    `<span class="text-blue-600">Soal ${soal.nomor}</span><br>
+    <div class="mt-2 font-normal text-slate-700 text-base md:text-lg leading-relaxed">${soal.soal}</div>`;
+
+  const opsiBox = document.getElementById("opsi");
+  opsiBox.innerHTML = "";
+
+  soal.opsi.forEach((opsi, i) => {
+    if (!opsi) return; // Skip opsi kosong
+    
+    const huruf = ["A","B","C","D","E"][i];
+    const label = document.createElement("label");
+    label.className = `flex items-start gap-3 p-4 border rounded-xl cursor-pointer transition-all duration-200 hover:bg-slate-50 active:bg-slate-100
+      ${jawaban[indexSoal] === huruf ? "border-blue-500 bg-blue-50" : "border-slate-200"}`;
+
+    const radio = document.createElement("input");
+    radio.type = "radio";
+    radio.name = "jawaban";
+    radio.checked = jawaban[indexSoal] === huruf;
+    radio.className = "mt-1";
+    radio.onclick = () => {
+      jawaban[indexSoal] = huruf;
+      renderNav();
+      updateProgress();
+      
+      // Auto navigate ke soal berikutnya setelah 500ms
+      setTimeout(() => {
+        if (indexSoal < dataSoal.length - 1) {
+          indexSoal++;
+          renderSoal();
         }
-      }, 1000);
-    });
-  </script>
+      }, 500);
+    };
+
+    const opsiText = document.createElement("div");
+    opsiText.className = "flex-1";
+    opsiText.innerHTML = `<span class="font-bold ${jawaban[indexSoal] === huruf ? 'text-blue-600' : 'text-slate-700'}">${huruf}.</span> 
+      <span class="ml-2 text-slate-700">${opsi}</span>`;
+
+    label.appendChild(radio);
+    label.appendChild(opsiText);
+    opsiBox.appendChild(label);
+  });
+  
+  // Update button states
+  document.getElementById('prevBtn').disabled = indexSoal === 0;
+  document.getElementById('nextBtn').disabled = indexSoal === dataSoal.length - 1;
+  
+  // Update soal aktif di navigasi
+  renderNav();
+}
+
+/* =====================
+   UPDATE PROGRESS
+===================== */
+function updateProgress() {
+  const total = dataSoal.length;
+  const terjawab = Object.keys(jawaban).length;
+  const progress = total > 0 ? (terjawab / total) * 100 : 0;
+  
+  document.getElementById('progressBar').style.width = `${progress}%`;
+  document.getElementById('soalTerjawab').textContent = terjawab;
+}
+
+/* =====================
+   NAVIGASI BUTTON HANDLERS
+===================== */
+document.getElementById('prevBtn').addEventListener('click', () => {
+  if (indexSoal > 0) {
+    indexSoal--;
+    renderSoal();
+  }
+});
+
+document.getElementById('nextBtn').addEventListener('click', () => {
+  if (indexSoal < dataSoal.length - 1) {
+    indexSoal++;
+    renderSoal();
+  }
+});
+
+/* =====================
+   ANTI COPY & SCREENSHOT
+===================== */
+document.addEventListener("contextmenu", e => e.preventDefault());
+document.addEventListener("keydown", e => {
+  if (e.ctrlKey || e.key === "PrintScreen") {
+    e.preventDefault();
+    document.body.classList.add("blur");
+    setTimeout(() => {
+      document.body.classList.remove("blur");
+      alert("Screenshot tidak diperbolehkan selama ujian!");
+    }, 1000);
+  }
+});
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) {
+    document.body.classList.add("blur");
+  } else {
+    setTimeout(() => {
+      document.body.classList.remove("blur");
+    }, 300);
+  }
+});
+
+/* =====================
+   SWIPE GESTURE FOR MOBILE
+===================== */
+let touchStartX = 0;
+let touchEndX = 0;
+
+document.addEventListener('touchstart', e => {
+  touchStartX = e.changedTouches[0].screenX;
+});
+
+document.addEventListener('touchend', e => {
+  touchEndX = e.changedTouches[0].screenX;
+  handleSwipe();
+});
+
+function handleSwipe() {
+  const swipeThreshold = 50;
+  const diff = touchStartX - touchEndX;
+  
+  // Swipe kiri -> next soal
+  if (diff > swipeThreshold && indexSoal < dataSoal.length - 1) {
+    indexSoal++;
+    renderSoal();
+  }
+  // Swipe kanan -> previous soal
+  else if (diff < -swipeThreshold && indexSoal > 0) {
+    indexSoal--;
+    renderSoal();
+  }
+}
+</script>
 </body>
 </html>
