@@ -2,316 +2,480 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
+<title>CBT Ujian Online</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Soal Pilihan Ganda</title>
 
-<!-- Tailwind -->
+<!-- Tailwind CSS -->
 <script src="https://cdn.tailwindcss.com"></script>
-
-<!-- Google Visualization -->
-<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
-/* Anti copy */
-* {
-  user-select: none;
-  -webkit-user-select: none;
-  -ms-user-select: none;
-}
-
-/* Blur saat screenshot / tab pindah */
-.blur {
-  filter: blur(10px);
-  transition: filter 0.3s ease;
-}
-
-/* Animasi untuk tombol */
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.fade-in {
-  animation: fadeIn 0.3s ease-out;
-}
+  /* Custom styles untuk mempertahankan fungsi asli */
+  * { user-select: none; }
+  .hidden { display: none; }
+  .opsi input { display: none; }
+  
+  /* Animasi untuk transisi */
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  .animate-fade-in {
+    animation: fadeIn 0.3s ease-out;
+  }
+  
+  /* Scrollbar custom */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background: #1e293b;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: #475569;
+    border-radius: 4px;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background: #64748b;
+  }
 </style>
 </head>
 
-<body class="bg-gradient-to-b from-slate-50 to-slate-100 min-h-screen">
-<div id="app" class="max-w-3xl mx-auto p-3 md:p-4 min-h-screen flex flex-col">
+<body oncontextmenu="return false" class="bg-gradient-to-br from-slate-900 to-slate-950 min-h-screen text-white">
 
-  <!-- Header -->
-  <div class="mb-4 md:mb-6">
-    <h1 class="text-xl md:text-2xl font-bold text-slate-800 text-center">Ujian Online</h1>
-    <div class="flex justify-between items-center mt-2">
-      <div class="text-sm text-slate-600">
-        Soal: <span id="currentSoal" class="font-bold">1</span>/<span id="totalSoal" class="font-bold">0</span>
+<!-- Overlay Blokir -->
+<div id="blackout" class="fixed inset-0 bg-black z-50 hidden flex-col items-center justify-center text-center p-4">
+  <div class="bg-red-900/30 p-8 rounded-2xl border border-red-700/50 max-w-md w-full backdrop-blur-sm">
+    <div class="text-red-400 text-5xl mb-4">
+      <i class="fas fa-ban"></i>
+    </div>
+    <h2 class="text-2xl font-bold text-red-300 mb-2">⚠️ SCREENSHOT TERDETEKSI</h2>
+    <p class="text-red-200 text-lg mb-4">UJIAN DIHENTIKAN</p>
+    <div class="bg-black/50 p-4 rounded-lg">
+      <p class="text-slate-300">Anda melakukan pelanggaran.<br>Nilai Anda: <b class="text-red-400">0</b></p>
+    </div>
+  </div>
+</div>
+
+<div class="container mx-auto px-4 py-6 max-w-4xl">
+  <!-- Login Section -->
+  <div id="login" class="animate-fade-in">
+    <div class="bg-gradient-to-r from-slate-800 to-slate-900 rounded-2xl shadow-2xl overflow-hidden border border-slate-700">
+      <!-- Header Login -->
+      <div class="bg-gradient-to-r from-blue-900 to-indigo-900 p-6 text-center">
+        <div class="flex justify-center mb-4">
+          <div class="bg-blue-800/50 p-4 rounded-full">
+            <i class="fas fa-graduation-cap text-4xl text-blue-300"></i>
+          </div>
+        </div>
+        <h1 class="text-3xl font-bold text-white">CBT Ujian Online</h1>
+        <p class="text-blue-200 mt-2">Sistem Computer Based Test</p>
       </div>
-      <div class="text-sm text-slate-600">
-        Telah dijawab: <span id="soalTerjawab" class="font-bold">0</span>
+      
+      <!-- Form Login -->
+      <div class="p-8">
+        <div class="mb-8">
+          <h2 class="text-2xl font-bold mb-2 text-slate-100">Masuk untuk Memulai Ujian</h2>
+          <p class="text-slate-400">Silakan masukkan data diri Anda untuk mengikuti ujian</p>
+        </div>
+        
+        <div class="space-y-6">
+          <div>
+            <label for="nama" class="block text-slate-300 mb-2 font-medium">
+              <i class="fas fa-user mr-2 text-blue-400"></i>Nama Lengkap
+            </label>
+            <input id="nama" placeholder="Masukkan nama lengkap" 
+                   class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+          </div>
+          
+          <div>
+            <label for="kelas" class="block text-slate-300 mb-2 font-medium">
+              <i class="fas fa-users mr-2 text-blue-400"></i>Kelas
+            </label>
+            <input id="kelas" placeholder="Contoh: XII IPA 1" 
+                   class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+          </div>
+          
+          <button onclick="mulai()" 
+                  class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-3.5 px-4 rounded-xl text-lg transition-all duration-300 transform hover:-translate-y-0.5 shadow-lg hover:shadow-xl flex items-center justify-center">
+            <i class="fas fa-play-circle mr-2"></i> Mulai Ujian
+          </button>
+        </div>
+        
+        <!-- Petunjuk -->
+        <div class="mt-10 pt-6 border-t border-slate-700">
+          <h3 class="text-lg font-bold text-slate-300 mb-3 flex items-center">
+            <i class="fas fa-info-circle mr-2 text-yellow-500"></i> Petunjuk Ujian
+          </h3>
+          <ul class="space-y-2 text-sm text-slate-400">
+            <li class="flex items-start"><i class="fas fa-clock text-blue-400 mt-1 mr-2 text-xs"></i> Waktu ujian: <span class="text-yellow-400 ml-1">60 menit</span></li>
+            <li class="flex items-start"><i class="fas fa-ban text-red-400 mt-1 mr-2 text-xs"></i> Dilarang screenshot atau berpindah tab</li>
+            <li class="flex items-start"><i class="fas fa-mouse-pointer text-green-400 mt-1 mr-2 text-xs"></i> Pilih jawaban dengan mengklik opsi</li>
+            <li class="flex items-start"><i class="fas fa-flag text-purple-400 mt-1 mr-2 text-xs"></i> Gunakan navigasi untuk berpindah soal</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Ujian Section -->
+  <div id="ujian" class="hidden animate-fade-in">
+    <!-- Header Ujian -->
+    <div class="bg-gradient-to-r from-slate-800 to-slate-900 rounded-2xl shadow-2xl overflow-hidden border border-slate-700 mb-6">
+      <div class="md:flex items-center justify-between p-6">
+        <div>
+          <h2 class="text-2xl font-bold text-white flex items-center">
+            <i class="fas fa-file-alt mr-3 text-blue-400"></i> Ujian CBT Online
+          </h2>
+          <div class="flex items-center mt-2 text-slate-400">
+            <i class="fas fa-user-circle mr-2"></i>
+            <span id="userInfo" class="text-slate-300"></span>
+          </div>
+        </div>
+        
+        <div id="timer" class="bg-gradient-to-r from-blue-900/40 to-indigo-900/40 px-6 py-3 rounded-xl border border-blue-800/50 mt-4 md:mt-0">
+          <div class="flex items-center justify-center">
+            <i class="fas fa-clock text-yellow-400 mr-3 text-xl"></i>
+            <div class="text-center">
+              <div class="text-xs text-slate-300">Sisa Waktu</div>
+              <div class="text-2xl font-bold tracking-wider text-yellow-400" id="timerDisplay">60:00</div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
     
-    <!-- Progress bar -->
-    <div class="mt-2">
-      <div class="h-2 bg-slate-200 rounded-full overflow-hidden">
-        <div id="progressBar" class="h-full bg-blue-500 rounded-full transition-all duration-300" style="width: 0%"></div>
+    <div class="lg:flex gap-6">
+      <!-- Navigasi Soal -->
+      <div class="lg:w-1/4 mb-6 lg:mb-0">
+        <div class="bg-slate-800/80 rounded-2xl p-5 border border-slate-700 h-full">
+          <div class="flex items-center justify-between mb-5">
+            <h3 class="font-bold text-lg text-slate-300">
+              <i class="fas fa-list-ol mr-2 text-blue-400"></i> Navigasi Soal
+            </h3>
+            <div class="bg-slate-900 px-3 py-1 rounded-lg text-sm">
+              <span id="answeredCount" class="text-green-400 font-bold">0</span> / 
+              <span id="totalSoal" class="font-bold">0</span>
+            </div>
+          </div>
+          
+          <div class="mb-4">
+            <div class="flex items-center mb-2">
+              <div class="w-4 h-4 rounded bg-blue-600 mr-2"></div>
+              <span class="text-sm text-slate-400">Terjawab</span>
+            </div>
+            <div class="flex items-center">
+              <div class="w-4 h-4 rounded bg-red-600 mr-2"></div>
+              <span class="text-sm text-slate-400">Belum terjawab</span>
+            </div>
+          </div>
+          
+          <div id="nav" class="grid grid-cols-5 sm:grid-cols-6 lg:grid-cols-4 gap-2 max-h-60 overflow-y-auto p-1"></div>
+          
+          <div class="mt-6 pt-5 border-t border-slate-700">
+            <button onclick="selesai()" 
+                    class="w-full bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white font-medium py-3 px-4 rounded-xl transition-all duration-300 flex items-center justify-center">
+              <i class="fas fa-flag-checkered mr-2"></i> Selesaikan Ujian
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Soal dan Opsi -->
+      <div class="lg:w-3/4">
+        <div class="bg-gradient-to-b from-slate-800 to-slate-900 rounded-2xl shadow-xl overflow-hidden border border-slate-700 h-full">
+          <div class="p-2 bg-gradient-to-r from-slate-800 to-slate-900 border-b border-slate-700">
+            <div class="flex items-center px-4 py-3">
+              <div class="bg-blue-600/20 p-2 rounded-lg mr-3">
+                <i class="fas fa-question-circle text-blue-400"></i>
+              </div>
+              <div>
+                <h3 class="font-bold text-slate-300">Soal No. <span id="currentSoalNumber">1</span></h3>
+                <p class="text-xs text-slate-500">Pilih salah satu jawaban yang benar</p>
+              </div>
+            </div>
+          </div>
+          
+          <div id="soalBox" class="p-6">
+            <!-- Soal dan opsi akan diisi oleh JavaScript -->
+            <div class="flex items-center justify-center h-64">
+              <div class="text-center">
+                <div class="text-5xl text-slate-700 mb-4">
+                  <i class="fas fa-spinner fa-spin"></i>
+                </div>
+                <p class="text-slate-500">Memuat soal...</p>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Navigasi Soal (Previous/Next) -->
+          <div class="p-6 border-t border-slate-700 bg-slate-900/50">
+            <div class="flex justify-between">
+              <button onclick="prevSoal()" 
+                      class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium py-3 px-6 rounded-xl transition-all duration-300 flex items-center">
+                <i class="fas fa-arrow-left mr-2"></i> Sebelumnya
+              </button>
+              
+              <button onclick="nextSoal()" 
+                      class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium py-3 px-6 rounded-xl transition-all duration-300 flex items-center">
+                Selanjutnya <i class="fas fa-arrow-right ml-2"></i>
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
-
-  <!-- Navigasi Nomor Soal (mobile optimized) -->
-  <div class="mb-4 md:mb-6">
-    <div class="flex justify-between items-center mb-2">
-      <h3 class="font-medium text-slate-700">Navigasi Soal</h3>
-      <span class="text-xs text-slate-500">Ketuk untuk pindah soal</span>
+  
+  <!-- Blokir Section -->
+  <div id="blokir" class="hidden animate-fade-in">
+    <div class="bg-gradient-to-r from-red-900/30 to-rose-900/30 rounded-2xl shadow-2xl overflow-hidden border border-red-800/50 text-center p-12 max-w-2xl mx-auto">
+      <div class="text-red-400 text-6xl mb-6">
+        <i class="fas fa-exclamation-triangle"></i>
+      </div>
+      <h2 class="text-3xl font-bold text-red-300 mb-4">UJIAN DIHENTIKAN</h2>
+      <p class="text-xl text-red-200 mb-8">Anda melakukan pelanggaran.</p>
+      <div class="bg-black/50 p-6 rounded-xl mb-8">
+        <p class="text-slate-300 text-lg">Nilai Anda:</p>
+        <div class="text-5xl font-bold text-red-500 mt-2">0</div>
+      </div>
+      <p class="text-slate-400 text-sm">Silakan hubungi pengawas ujian untuk informasi lebih lanjut.</p>
     </div>
-    <div id="navSoal" class="grid grid-cols-5 md:grid-cols-8 gap-2 max-h-40 overflow-y-auto p-2 bg-white/50 rounded-lg"></div>
-  </div>
-
-  <!-- Card Soal -->
-  <div id="soalBox" class="bg-white rounded-2xl shadow-lg p-4 md:p-6 mb-4 md:mb-6 flex-grow fade-in">
-    <h2 id="judulSoal" class="font-bold text-lg md:text-xl text-slate-800 mb-4 md:mb-6"></h2>
-
-    <form id="formJawaban" class="space-y-3 md:space-y-4">
-      <div id="opsi"></div>
-    </form>
-  </div>
-
-  <!-- Navigasi Soal (Previous/Next) -->
-  <div class="flex justify-between gap-3 mb-6">
-    <button id="prevBtn" class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 font-medium py-3 px-4 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-        <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
-      </svg>
-      <span>Sebelumnya</span>
-    </button>
-    
-    <button id="nextBtn" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
-      <span>Selanjutnya</span>
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
-      </svg>
-    </button>
-  </div>
-
-  <!-- Footer -->
-  <div class="text-center text-xs text-slate-500 mt-auto pt-4 border-t border-slate-200">
-    <p>Ujian dilindungi dari penyalahgunaan. Screenshot akan mengaburkan layar.</p>
   </div>
 </div>
 
 <script>
-/* =====================
-   KONFIGURASI SHEET
-===================== */
-const sheetID = "1OIsVI6IxJBJubqfWNRJsk8Z5ShORGXs1uTbgqVO4ca8";
-const sheetName = "Sheet1";
+// Data dan variabel
+const SHEET = 'https://docs.google.com/spreadsheets/d/1OIsVI6IxJBJubqfWNRJsk8Z5ShORGXs1uTbgqVO4ca8/gviz/tq?tqx=out:json';
+let soal = [], index = 0, jawaban = {}, timer = 3600, interval;
+let aktif = true;
 
-/* =====================
-   VARIABEL
-===================== */
-let dataSoal = [];
-let indexSoal = 0;
-let jawaban = {};
-
-/* =====================
-   LOAD DATA SHEET
-===================== */
-google.charts.load('current', {'packages':['table']});
-google.charts.setOnLoadCallback(loadData);
-
-function loadData() {
-  const query = new google.visualization.Query(
-    `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?sheet=${sheetName}`
-  );
-  query.send(response => {
-    const data = response.getDataTable();
-    for (let i = 0; i < data.getNumberOfRows(); i++) {
-      dataSoal.push({
-        nomor: data.getValue(i, 0),
-        soal: data.getValue(i, 1),
-        opsi: [
-          data.getValue(i, 2),
-          data.getValue(i, 3),
-          data.getValue(i, 4),
-          data.getValue(i, 5),
-          data.getValue(i, 6)
-        ]
-      });
-    }
-    renderNav();
-    renderSoal();
-    updateProgress();
-    
-    // Update total soal di header
-    document.getElementById('totalSoal').textContent = dataSoal.length;
-  });
+// Fungsi untuk mengacak array
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
 }
 
-/* =====================
-   NAVIGASI NOMOR
-===================== */
-function renderNav() {
-  const nav = document.getElementById("navSoal");
-  nav.innerHTML = "";
-  dataSoal.forEach((_, i) => {
-    const btn = document.createElement("button");
-    btn.innerText = i + 1;
-    btn.className = `w-full h-10 rounded-lg font-bold transition-all duration-200 transform hover:scale-105 active:scale-95 
-      ${jawaban[i] ? "bg-blue-500 text-white shadow-md" : "bg-white text-slate-700 border border-slate-300"} 
-      ${i === indexSoal ? "ring-2 ring-blue-300 ring-offset-1" : ""}`;
-    btn.onclick = () => {
-      indexSoal = i;
-      renderSoal();
-    };
-    nav.appendChild(btn);
-  });
-}
-
-/* =====================
-   TAMPILKAN SOAL
-===================== */
-function renderSoal() {
-  const soal = dataSoal[indexSoal];
-  if (!soal) return;
+// Fungsi untuk mulai ujian
+function mulai() {
+  if (!nama.value || !kelas.value) {
+    alert("Nama dan kelas wajib diisi!");
+    return;
+  }
   
-  document.getElementById("currentSoal").textContent = indexSoal + 1;
-  document.getElementById("judulSoal").innerHTML = 
-    `<span class="text-blue-600">Soal ${soal.nomor}</span><br>
-    <div class="mt-2 font-normal text-slate-700 text-base md:text-lg leading-relaxed">${soal.soal}</div>`;
+  // Simpan info user
+  document.getElementById('userInfo').textContent = `${nama.value} - ${kelas.value}`;
+  
+  // Sembunyikan login, tampilkan ujian
+  login.classList.add('hidden');
+  ujian.classList.remove('hidden');
+  
+  loadSoal();
+  startTimer();
+}
 
-  const opsiBox = document.getElementById("opsi");
-  opsiBox.innerHTML = "";
-
-  soal.opsi.forEach((opsi, i) => {
-    if (!opsi) return; // Skip opsi kosong
-    
-    const huruf = ["A","B","C","D","E"][i];
-    const label = document.createElement("label");
-    label.className = `flex items-start gap-3 p-4 border rounded-xl cursor-pointer transition-all duration-200 hover:bg-slate-50 active:bg-slate-100
-      ${jawaban[indexSoal] === huruf ? "border-blue-500 bg-blue-50" : "border-slate-200"}`;
-
-    const radio = document.createElement("input");
-    radio.type = "radio";
-    radio.name = "jawaban";
-    radio.checked = jawaban[indexSoal] === huruf;
-    radio.className = "mt-1";
-    radio.onclick = () => {
-      jawaban[indexSoal] = huruf;
-      renderNav();
-      updateProgress();
+// Fungsi untuk memuat soal dari Google Sheets
+function loadSoal() {
+  fetch(SHEET).then(r => r.text()).then(t => {
+    const j = JSON.parse(t.substr(47).slice(0, -2));
+    soal = j.table.rows.map(r => {
+      let opsi = [
+        { k: 'A', v: r.c[2]?.v || '' },
+        { k: 'B', v: r.c[3]?.v || '' },
+        { k: 'C', v: r.c[4]?.v || '' },
+        { k: 'D', v: r.c[5]?.v || '' },
+        { k: 'E', v: r.c[6]?.v || '' }
+      ];
       
-      // Auto navigate ke soal berikutnya setelah 500ms
-      setTimeout(() => {
-        if (indexSoal < dataSoal.length - 1) {
-          indexSoal++;
-          renderSoal();
-        }
-      }, 500);
-    };
-
-    const opsiText = document.createElement("div");
-    opsiText.className = "flex-1";
-    opsiText.innerHTML = `<span class="font-bold ${jawaban[indexSoal] === huruf ? 'text-blue-600' : 'text-slate-700'}">${huruf}.</span> 
-      <span class="ml-2 text-slate-700">${opsi}</span>`;
-
-    label.appendChild(radio);
-    label.appendChild(opsiText);
-    opsiBox.appendChild(label);
+      // Filter hanya opsi yang memiliki nilai
+      opsi = opsi.filter(o => o.v);
+      shuffle(opsi);
+      
+      let kunci = opsi.find(o => o.k === r.c[7]?.v);
+      return { soal: r.c[1]?.v || '', opsi: opsi, benar: kunci?.k };
+    });
+    
+    shuffle(soal);
+    renderNav();
+    tampil(0);
+  }).catch(error => {
+    console.error("Error loading soal:", error);
+    alert("Gagal memuat soal. Silakan coba lagi.");
   });
+}
+
+// Fungsi untuk memulai timer
+function startTimer() {
+  updateTimerDisplay();
+  interval = setInterval(() => {
+    timer--;
+    updateTimerDisplay();
+    if (timer <= 0) selesai();
+  }, 1000);
+}
+
+// Fungsi untuk menampilkan timer
+function updateTimerDisplay() {
+  let m = Math.floor(timer / 60);
+  let s = timer % 60;
+  document.getElementById('timerDisplay').textContent = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+}
+
+// Fungsi untuk merender navigasi soal
+function renderNav() {
+  const nav = document.getElementById('nav');
+  nav.innerHTML = '';
   
-  // Update button states
-  document.getElementById('prevBtn').disabled = indexSoal === 0;
-  document.getElementById('nextBtn').disabled = indexSoal === dataSoal.length - 1;
+  // Update counter
+  const answeredCount = Object.keys(jawaban).length;
+  document.getElementById('answeredCount').textContent = answeredCount;
+  document.getElementById('totalSoal').textContent = soal.length;
   
-  // Update soal aktif di navigasi
+  soal.forEach((s, i) => {
+    let b = document.createElement('button');
+    b.textContent = i + 1;
+    b.className = `nav-btn w-full h-10 flex items-center justify-center rounded-lg font-medium transition-all duration-200 ${jawaban[i] ? 'bg-gradient-to-r from-blue-600 to-blue-700 shadow-md' : 'bg-gradient-to-r from-red-600 to-red-700'}`;
+    b.onclick = () => tampil(i);
+    nav.appendChild(b);
+  });
+}
+
+// Fungsi untuk menampilkan soal
+function tampil(i) {
+  index = i;
+  const s = soal[i];
+  
+  // Update nomor soal
+  document.getElementById('currentSoalNumber').textContent = i + 1;
+  
+  // Tampilkan soal dan opsi
+  soalBox.innerHTML = `
+    <div class="mb-8">
+      <div class="text-lg text-slate-300 leading-relaxed">${s.soal}</div>
+    </div>
+    <div class="space-y-3">
+      ${s.opsi.map((o, idx) => `
+        <label class="block cursor-pointer">
+          <input type="radio" name="opsi" value="${o.k}" ${jawaban[i] === o.k ? 'checked' : ''} onchange="jawab('${o.k}')">
+          <div class="bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl p-4 transition-all duration-200 flex items-start ${jawaban[i] === o.k ? 'ring-2 ring-blue-500 bg-blue-900/20' : ''}">
+            <div class="flex-shrink-0 w-8 h-8 rounded-lg ${jawaban[i] === o.k ? 'bg-gradient-to-r from-blue-600 to-blue-500' : 'bg-slate-700'} flex items-center justify-center mr-3 font-bold">
+              ${String.fromCharCode(65 + idx)}
+            </div>
+            <div class="text-slate-300">${o.v}</div>
+          </div>
+        </label>
+      `).join('')}
+    </div>
+  `;
+}
+
+// Fungsi untuk menyimpan jawaban
+function jawab(v) {
+  jawaban[index] = v;
   renderNav();
 }
 
-/* =====================
-   UPDATE PROGRESS
-===================== */
-function updateProgress() {
-  const total = dataSoal.length;
-  const terjawab = Object.keys(jawaban).length;
-  const progress = total > 0 ? (terjawab / total) * 100 : 0;
-  
-  document.getElementById('progressBar').style.width = `${progress}%`;
-  document.getElementById('soalTerjawab').textContent = terjawab;
+// Fungsi untuk navigasi soal
+function nextSoal() {
+  if (index < soal.length - 1) {
+    tampil(index + 1);
+  }
 }
 
-/* =====================
-   NAVIGASI BUTTON HANDLERS
-===================== */
-document.getElementById('prevBtn').addEventListener('click', () => {
-  if (indexSoal > 0) {
-    indexSoal--;
-    renderSoal();
+function prevSoal() {
+  if (index > 0) {
+    tampil(index - 1);
+  }
+}
+
+// Fungsi untuk menyelesaikan ujian
+function selesai() {
+  clearInterval(interval);
+  
+  // Hitung skor
+  let benar = 0;
+  soal.forEach((s, i) => {
+    if (jawaban[i] === s.benar) benar++;
+  });
+  
+  const skor = Math.round((benar / soal.length) * 100);
+  
+  alert(`Ujian selesai!\n\nJawaban benar: ${benar} dari ${soal.length}\nNilai: ${skor}`);
+  
+  // Tampilkan hasil (bisa dikembangkan lebih lanjut)
+  ujian.classList.add('hidden');
+  blokir.classList.remove('hidden');
+  document.getElementById('blokir').innerHTML = `
+    <div class="bg-gradient-to-r from-emerald-900/30 to-green-900/30 rounded-2xl shadow-2xl overflow-hidden border border-emerald-800/50 text-center p-12 max-w-2xl mx-auto">
+      <div class="text-emerald-400 text-6xl mb-6">
+        <i class="fas fa-check-circle"></i>
+      </div>
+      <h2 class="text-3xl font-bold text-emerald-300 mb-4">UJIAN SELESAI</h2>
+      <div class="bg-black/50 p-8 rounded-xl mb-8">
+        <p class="text-slate-300 text-lg mb-2">Hasil Ujian Anda</p>
+        <div class="grid grid-cols-2 gap-4 mt-6">
+          <div class="bg-slate-800/50 p-4 rounded-xl">
+            <div class="text-3xl font-bold text-emerald-400">${benar}</div>
+            <div class="text-slate-400 text-sm mt-1">Jawaban Benar</div>
+          </div>
+          <div class="bg-slate-800/50 p-4 rounded-xl">
+            <div class="text-3xl font-bold text-amber-400">${soal.length - benar}</div>
+            <div class="text-slate-400 text-sm mt-1">Jawaban Salah</div>
+          </div>
+        </div>
+        <div class="mt-8 pt-6 border-t border-slate-700">
+          <p class="text-slate-400">Nilai Akhir:</p>
+          <div class="text-6xl font-bold text-white mt-2">${skor}</div>
+        </div>
+      </div>
+      <p class="text-slate-400 text-sm">Terima kasih telah mengikuti ujian.</p>
+    </div>
+  `;
+}
+
+/* ===== ANTI SCREENSHOT ===== */
+function blokTotal() {
+  aktif = false;
+  clearInterval(interval);
+  document.getElementById('blackout').style.display = 'flex';
+  document.getElementById('ujian').style.display = 'none';
+}
+
+/* Deteksi PrintScreen */
+document.addEventListener('keyup', e => {
+  if (e.key === "PrintScreen") {
+    blokTotal();
   }
 });
 
-document.getElementById('nextBtn').addEventListener('click', () => {
-  if (indexSoal < dataSoal.length - 1) {
-    indexSoal++;
-    renderSoal();
-  }
-});
+/* Screen capture API (Chrome/Edge) */
+if (navigator.mediaDevices) {
+  navigator.mediaDevices.getDisplayMedia({ video: true })
+    .then(stream => {
+      blokTotal();
+      stream.getTracks().forEach(t => t.stop());
+    }).catch(() => {});
+}
 
-/* =====================
-   ANTI COPY & SCREENSHOT
-===================== */
-document.addEventListener("contextmenu", e => e.preventDefault());
-document.addEventListener("keydown", e => {
-  if (e.ctrlKey || e.key === "PrintScreen") {
-    e.preventDefault();
-    document.body.classList.add("blur");
-    setTimeout(() => {
-      document.body.classList.remove("blur");
-      alert("Screenshot tidak diperbolehkan selama ujian!");
-    }, 1000);
-  }
-});
+/* Pindah tab */
 document.addEventListener("visibilitychange", () => {
-  if (document.hidden) {
-    document.body.classList.add("blur");
-  } else {
-    setTimeout(() => {
-      document.body.classList.remove("blur");
-    }, 300);
+  if (document.hidden && aktif) {
+    blokTotal();
   }
 });
 
-/* =====================
-   SWIPE GESTURE FOR MOBILE
-===================== */
-let touchStartX = 0;
-let touchEndX = 0;
-
-document.addEventListener('touchstart', e => {
-  touchStartX = e.changedTouches[0].screenX;
-});
-
-document.addEventListener('touchend', e => {
-  touchEndX = e.changedTouches[0].screenX;
-  handleSwipe();
-});
-
-function handleSwipe() {
-  const swipeThreshold = 50;
-  const diff = touchStartX - touchEndX;
-  
-  // Swipe kiri -> next soal
-  if (diff > swipeThreshold && indexSoal < dataSoal.length - 1) {
-    indexSoal++;
-    renderSoal();
+/* Blok CTRL */
+document.addEventListener('keydown', e => {
+  if (e.ctrlKey && (e.key === 's' || e.key === 'S' || e.key === 'p' || e.key === 'P')) {
+    e.preventDefault();
   }
-  // Swipe kanan -> previous soal
-  else if (diff < -swipeThreshold && indexSoal > 0) {
-    indexSoal--;
-    renderSoal();
-  }
-}
+});
 </script>
+
 </body>
 </html>
